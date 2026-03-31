@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramais — ADM</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2230;
+  --border: #2a3446;
+  --border2: #3d4f6a;
+  --text: #e6edf3;
+  --muted: #8b9cad;
+  --dim: #4a5568;
+  --accent-t: #e63946;
+  --accent-v: #2196f3;
+  --accent-o: #ff9800;
+  --gold: #f4c542;
+  --green: #3fb950;
+  --danger: #f85149;
+  --radius: 10px;
+}
+
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* LOGIN SCREEN */
+#loginScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.login-icon {
+  width: 56px; height: 56px;
+  background: rgba(230,57,70,0.12);
+  border: 1px solid rgba(230,57,70,0.25);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.login-icon svg { width: 26px; height: 26px; stroke: var(--accent-t); fill: none; }
+
+.login-box h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.login-box p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  outline: none;
+  text-align: center;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+  transition: border-color .2s;
+}
+
+.login-box input:focus { border-color: var(--accent-t); }
+
+.login-error {
+  font-size: 12px;
+  color: var(--danger);
+  min-height: 16px;
+  margin-bottom: 10px;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-t);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.btn-login:hover { background: #c62f3b; }
+
+/* MAIN APP */
+#app { display: none; }
+
+/* HEADER */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand-pills { display: flex; gap: 8px; }
+.brand-pill { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.pill-t { background: rgba(230,57,70,0.15); color: var(--accent-t); border: 1px solid rgba(230,57,70,0.3); }
+.pill-v { background: rgba(33,150,243,0.15); color: var(--accent-v); border: 1px solid rgba(33,150,243,0.3); }
+
+.header-title { font-size: 15px; font-weight: 600; }
+.header-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.adm-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-tag {
+  padding: 3px 10px;
+  background: rgba(244,197,66,0.12);
+  border: 1px solid rgba(244,197,66,0.3);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+
+.btn-logout {
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+/* TOOLBAR */
+.toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 340px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--muted); fill: none; }
+#searchInput {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+#searchInput::placeholder { color: var(--dim); }
+#searchInput:focus { border-color: var(--border2); }
+
+.sel-style {
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.toolbar-right { display: flex; gap: 8px; margin-left: auto; }
+
+.btn {
+  padding: 9px 16px;
+  border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.btn svg { width: 14px; height: 14px; }
+.btn-primary { background: var(--accent-t); color: white; }
+.btn-primary:hover { background: #c62f3b; }
+.btn-outline { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--border2); color: var(--text); }
+.btn-gold { background: rgba(244,197,66,0.15); color: var(--gold); border: 1px solid rgba(244,197,66,0.3); }
+.btn-gold:hover { background: rgba(244,197,66,0.25); }
+
+/* STATS */
+.stats-row {
+  padding: 10px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+}
+.stat strong { color: var(--text); font-weight: 600; }
+
+/* CONTENT */
+.content { padding: 24px 32px; }
+
+.dept-block { margin-bottom: 28px; }
+
+.dept-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dept-stripe { width: 3px; height: 20px; border-radius: 3px; }
+.dept-text { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+.dept-empresa { font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 700; letter-spacing: 0.5px; }
+.tag-t { background: rgba(230,57,70,0.1); color: var(--accent-t); }
+.tag-v { background: rgba(33,150,243,0.1); color: var(--accent-v); }
+.tag-o { background: rgba(255,152,0,0.1); color: var(--accent-o); }
+.dept-n { font-size: 12px; color: var(--dim); }
+
+/* TABLE */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead tr { background: var(--bg); }
+thead th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+
+td { padding: 10px 16px; font-size: 13px; vertical-align: middle; }
+
+.td-nome { font-weight: 500; color: var(--text); }
+.td-email { color: var(--muted); font-size: 12px; }
+.td-ramal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.td-actions { display: flex; gap: 6px; }
+
+.action-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.action-btn svg { width: 12px; height: 12px; }
+.action-btn:hover { border-color: var(--border2); color: var(--text); }
+.action-btn.del:hover { border-color: rgba(248,81,73,0.5); color: var(--danger); background: rgba(248,81,73,0.06); }
+
+/* EMPTY */
+.empty { text-align: center; padding: 60px 20px; color: var(--dim); }
+.empty svg { width: 40px; height: 40px; stroke: var(--border); fill: none; margin-bottom: 10px; }
+
+/* MODAL */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 20px;
+}
+.overlay.hidden { display: none; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal-head {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 24px;
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-head h2 { font-size: 16px; font-weight: 600; }
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: background .15s;
+  display: flex;
+}
+.modal-close:hover { background: var(--border); color: var(--text); }
+.modal-close svg { width: 16px; height: 16px; }
+
+.modal-body { padding: 24px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg.full { grid-column: 1 / -1; }
+
+.fg label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fg input, .fg select {
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+.fg input:focus, .fg select:focus { border-color: var(--border2); }
+.fg input::placeholder { color: var(--dim); }
+
+.modal-foot {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 640px) {
+  .header, .toolbar, .content, .stats-row { padding-left: 16px; padding-right: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .fg.full { grid-column: 1; }
+  thead th:nth-child(3), td:nth-child(3) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h2>Acesso Administrativo</h2>
+    <p>Lista de Ramais — Tecfag &amp; Valem</p>
+    <input type="password" id="pwdInput" placeholder="••••••" onkeydown="if(event.key==='Enter')login()">
+    <div class="login-error" id="loginErr"></div>
+    <button class="btn-login" onclick="login()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+<header class="header">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="brand-pills">
+      <span class="brand-pill pill-t">TECFAG</span>
+      <span class="brand-pill pill-v">VALEM</span>
+    </div>
+    <div>
+      <div class="header-title">Lista de Ramais</div>
+      <div class="header-sub">Painel administrativo</div>
+    </div>
+  </div>
+  <div class="adm-badge">
+    <span class="adm-tag">★ ADM</span>
+    <button class="btn-logout" onclick="logout()">Sair</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Buscar nome, ramal, e-mail..." oninput="render()">
+  </div>
+  <select class="sel-style" id="filterEmp" onchange="render()">
+    <option value="">Todas as empresas</option>
+    <option value="TECFAG">Tecfag</option>
+    <option value="VALEM">Valem</option>
+    <option value="OUTROS">Outros</option>
+  </select>
+  <select class="sel-style" id="filterDept" onchange="render()">
+    <option value="">Todos os depto.</option>
+  </select>
+  <div class="toolbar-right">
+    <button class="btn btn-outline" onclick="exportExcel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Excel
+    </button>
+    <button class="btn btn-gold" onclick="resetData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Restaurar
+    </button>
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Ramal
+    </button>
+  </div>
+</div>
+
+<div class="stats-row" id="statsRow"></div>
+<div class="content" id="content"></div>
+
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="overlay hidden" id="overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Novo Ramal</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Nome completo</label>
+          <input type="text" id="fNome" placeholder="Ex: Maria Souza">
+        </div>
+        <div class="fg">
+          <label>Ramal</label>
+          <input type="text" id="fRamal" placeholder="Ex: 5050">
+        </div>
+        <div class="fg">
+          <label>Empresa</label>
+          <select id="fEmpresa">
+            <option value="TECFAG">TECFAG</option>
+            <option value="VALEM">VALEM</option>
+            <option value="OUTROS">OUTROS</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Departamento (existente)</label>
+          <select id="fDept"><option value="">Selecione...</option></select>
+        </div>
+        <div class="fg">
+          <label>Novo departamento</label>
+          <input type="text" id="fNovoDept" placeholder="Ou crie um novo">
+        </div>
+        <div class="fg full">
+          <label>E-mail</label>
+          <input type="email" id="fEmail" placeholder="Ex: maria@tecfag.com.br">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRamal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────
+const SENHA = 'tecfag2024';
+const STORAGE_KEY = 'ramais_data_v1';
+const STORAGE_AUTH = 'ramais_auth';
+
+// ── DATA ────────────────────────────────────────────
+const RAMAIS_INICIAIS = [
+  { id:1,  empresa:'TECFAG', dept:'Diretoria',         nome:'Gilson Donato',      ramal:'5019', email:'gilson@tecfag.com.br' },
+  { id:2,  empresa:'TECFAG', dept:'Diretoria',         nome:'João Lanza',         ramal:'5009', email:'joao@tecfag.com.br' },
+  { id:3,  empresa:'TECFAG', dept:'Recursos Humanos',  nome:'Meire Redondo',      ramal:'5018', email:'rh@tecfag.com.br' },
+  { id:4,  empresa:'TECFAG', dept:'Recursos Humanos',  nome:'Thamiris Maciel',    ramal:'5018', email:'dho@tecfag.com.br' },
+  { id:5,  empresa:'TECFAG', dept:'Recepção',          nome:'Roseli Costa',       ramal:'5027', email:'recepcao2@tecfag.com.br' },
+  { id:6,  empresa:'TECFAG', dept:'Financeiro',        nome:'Samara Massa',       ramal:'5015', email:'financeiro@tecfag.com.br' },
+  { id:7,  empresa:'TECFAG', dept:'Financeiro',        nome:'Alessandra Rocha',   ramal:'5017', email:'financeiro2@tecfag.com.br' },
+  { id:8,  empresa:'TECFAG', dept:'Financeiro',        nome:'Fernanda Cristina',  ramal:'5028', email:'financeiro3@tecfag.com.br' },
+  { id:9,  empresa:'TECFAG', dept:'Financeiro',        nome:'Jeisa Batista',      ramal:'5057', email:'cobranca@tecfag.com.br' },
+  { id:10, empresa:'TECFAG', dept:'Comercial',         nome:'Patricia Pileggi',   ramal:'5001', email:'contato@tecfag.com.br' },
+  { id:11, empresa:'TECFAG', dept:'Comercial',         nome:'Melissa Gomes',      ramal:'5006', email:'vendas3@tecfag.com.br' },
+  { id:12, empresa:'TECFAG', dept:'Comercial',         nome:'Paulo Teixeira',     ramal:'5037', email:'vendas5@tecfag.com.br' },
+  { id:13, empresa:'TECFAG', dept:'Comercial',         nome:'Victor Goes',        ramal:'5007', email:'vendas12@tecfag.com.br' },
+  { id:14, empresa:'TECFAG', dept:'Comercial',         nome:'Diana Vieira',       ramal:'5003', email:'vendas14@tecfag.com.br' },
+  { id:15, empresa:'TECFAG', dept:'Comercial',         nome:'Déborah Rayane',     ramal:'5002', email:'vendas15@tecfag.com.br' },
+  { id:16, empresa:'TECFAG', dept:'Comercial',         nome:'Taynara Ribeiro',    ramal:'5055', email:'apoiocomercial@tecfag.com.br' },
+  { id:17, empresa:'TECFAG', dept:'Comercial',         nome:'Veronica Cristina',  ramal:'5064', email:'apoiocomercial2@tecfag.com.br' },
+  { id:18, empresa:'TECFAG', dept:'Comercial',         nome:'Jhordan Rueda',      ramal:'5044', email:'vendas4@tecfag.com.br' },
+  { id:19, empresa:'TECFAG', dept:'Comercial',         nome:'Carlos Eduardo',     ramal:'5051', email:'vendas1@tecfag.com.br' },
+  { id:20, empresa:'TECFAG', dept:'Comercial',         nome:'Azor Prado',         ramal:'5008', email:'vendas9@tecfag.com.br' },
+  { id:21, empresa:'TECFAG', dept:'Comercial',         nome:'Lucas Zuccari',      ramal:'5062', email:'vendas7@tecfag.com.br' },
+  { id:22, empresa:'TECFAG', dept:'Comercial',         nome:'Lucimara Silva',     ramal:'5052', email:'vendas@tecfag.com.br' },
+  { id:23, empresa:'TECFAG', dept:'Comercial',         nome:'Raiane Aguiar',      ramal:'5038', email:'vendas2@tecfag.com.br' },
+  { id:24, empresa:'TECFAG', dept:'Comercial',         nome:'Felipe Fonseca',     ramal:'5056', email:'vendas16@tecfag.com.br' },
+  { id:25, empresa:'TECFAG', dept:'Comercial',         nome:'Marcelo Nardelli',   ramal:'5021', email:'vendas17@tecfag.com.br' },
+  { id:26, empresa:'TECFAG', dept:'Comercial',         nome:'Guilherme Bertola',  ramal:'5020', email:'vendas18@tecfag.com.br' },
+  { id:27, empresa:'TECFAG', dept:'Comercial',         nome:'Gelson Filho',       ramal:'5063', email:'vendas10@tecfag.com.br' },
+  { id:28, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Fernando Mendes',  ramal:'5098', email:'atendimento.posvenda@tecfag.com.br' },
+  { id:29, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Vinicius Capetti', ramal:'5039', email:'assistencia@tecfag.com.br' },
+  { id:30, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Jonathas Martins', ramal:'5045', email:'assistencia2@tecfag.com.br' },
+  { id:31, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Giovane Amarante', ramal:'5046', email:'assistencia3@tecfag.com.br' },
+  { id:32, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Helio Fuzioka',    ramal:'5048', email:'assistencia4@tecfag.com.br' },
+  { id:33, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Leonardo Duarte',  ramal:'5043', email:'assistencia5@tecfag.com.br' },
+  { id:34, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Thiago Garcia',    ramal:'5036', email:'assistencia6@tecfag.com.br' },
+  { id:35, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Matheus Henrique', ramal:'5016', email:'assistencia7@tecfag.com.br' },
+  { id:36, empresa:'TECFAG', dept:'Assistência Técnica', nome:'João Pedro',       ramal:'5093', email:'assistencia8@tecfag.com.br' },
+  { id:37, empresa:'TECFAG', dept:'Assistência Técnica', nome:'Helson Silva',     ramal:'5003', email:'assistencia9@tecfag.com.br' },
+  { id:38, empresa:'TECFAG', dept:'Pós Venda',          nome:'Melissa Bueno',     ramal:'5047', email:'posvenda@tecfag.com.br' },
+  { id:39, empresa:'TECFAG', dept:'Pós Venda',          nome:'Cibele de Oliveira',ramal:'5013', email:'sac@tecfag.com.br' },
+  { id:40, empresa:'TECFAG', dept:'Marketing',          nome:'Kaio Katsuhiro',    ramal:'5011', email:'marketing3@tecfag.com.br' },
+  { id:41, empresa:'TECFAG', dept:'Marketing',          nome:'Lucas Spiri',       ramal:'5011', email:'criacao@tecfag.com.br' },
+  { id:42, empresa:'TECFAG', dept:'Marketing',          nome:'Gustavo Sessilio',  ramal:'5010', email:'ecommerce@tecfag.com.br' },
+  { id:43, empresa:'TECFAG', dept:'Marketing',          nome:'Matheus Ferraz',    ramal:'5014', email:'audiovisual@tecfag.com.br' },
+  { id:44, empresa:'TECFAG', dept:'Marketing',          nome:'Douglas Santos',    ramal:'5011', email:'marketing5@tecfag.com.br' },
+  { id:45, empresa:'TECFAG', dept:'Marketing',          nome:'Henrique Tavares',  ramal:'5011', email:'redacao@tecfag.com.br' },
+  { id:46, empresa:'TECFAG', dept:'Tecnologia da Informação', nome:'Rafael Bomfim',    ramal:'5030', email:'suporte@tecfag.com.br' },
+  { id:47, empresa:'TECFAG', dept:'Tecnologia da Informação', nome:'Tarcísio Pereira', ramal:'5031', email:'suporte2@tecfag.com.br' },
+  { id:48, empresa:'TECFAG', dept:'Tecnologia da Informação', nome:'Raphael Acosta',   ramal:'5032', email:'suporte3@tecfag.com.br' },
+  { id:49, empresa:'TECFAG', dept:'Estoque e Expedição', nome:'Ricardo Werner',   ramal:'5061', email:'almoxarifado@tecfag.com.br' },
+  { id:50, empresa:'TECFAG', dept:'Estoque e Expedição', nome:'Viviane Barnes',   ramal:'5023', email:'almoxarifado@tecfag.com.br' },
+  { id:51, empresa:'TECFAG', dept:'Estoque e Expedição', nome:'Waliffer Eduardo', ramal:'5004', email:'almoxarifado@tecfag.com.br' },
+  { id:52, empresa:'TECFAG', dept:'Estoque e Expedição', nome:'Ariel de Oliveira',ramal:'5023', email:'almoxarifado@tecfag.com.br' },
+  { id:53, empresa:'TECFAG', dept:'Estoque e Expedição', nome:'Jonatas Oliveira', ramal:'5005', email:'almoxarifado@tecfag.com.br' },
+  { id:54, empresa:'TECFAG', dept:'Compras',            nome:'Carolina Barbosa',  ramal:'5040', email:'compras@tecfag.com.br' },
+  { id:55, empresa:'VALEM',  dept:'Diretoria',          nome:'Sigmar Garaveli',   ramal:'5029', email:'sigmar@valempack.com.br' },
+  { id:56, empresa:'VALEM',  dept:'Diretoria',          nome:'João Francisco',    ramal:'5029', email:'joao@valempack.com.br' },
+  { id:57, empresa:'VALEM',  dept:'Financeiro',         nome:'Patricia Okimura',  ramal:'5095', email:'administrativo@valempack.com.br' },
+  { id:58, empresa:'VALEM',  dept:'Operacional',        nome:'Willian Batista',   ramal:'5080', email:'operacional@valempack.com.br' },
+  { id:59, empresa:'VALEM',  dept:'Operacional',        nome:'Bruno Monteiro',    ramal:'5083', email:'operacional2@valempack.com.br' },
+  { id:60, empresa:'VALEM',  dept:'Operacional',        nome:'Fernanda Oliveira', ramal:'5082', email:'operacional3@valempack.com.br' },
+  { id:61, empresa:'VALEM',  dept:'Marketing',          nome:'João Vitor',        ramal:'5098', email:'marketing@valempack.com.br' },
+  { id:62, empresa:'VALEM',  dept:'Comercial',          nome:'Sonia Anequine',    ramal:'5090', email:'vendas5@valempack.com.br' },
+  { id:63, empresa:'VALEM',  dept:'Comercial',          nome:'Ana Claudia',       ramal:'5086', email:'vendas6@valempack.com.br' },
+  { id:64, empresa:'VALEM',  dept:'Comercial',          nome:'Rayane Fernandes',  ramal:'5042', email:'vendas3@valempack.com.br' },
+  { id:65, empresa:'VALEM',  dept:'Comercial',          nome:'Jéssica Santos',    ramal:'5041', email:'vendas7@valempack.com.br' },
+  { id:66, empresa:'VALEM',  dept:'Comercial',          nome:'Tatiane',           ramal:'5088', email:'vendas4@valempack.com.br' },
+  { id:67, empresa:'OUTROS', dept:'Outros',             nome:'Sala de Reunião (Tecfag)', ramal:'5026', email:'' },
+  { id:68, empresa:'OUTROS', dept:'Outros',             nome:'Depósito (Valem)',   ramal:'5093', email:'' },
+];
+
+const DEPT_PALETTES = {
+  TECFAG: ['#e63946','#ff6b35','#f4c542','#4ade80','#38bdf8','#a78bfa','#fb7185','#34d399'],
+  VALEM:  ['#2196f3','#00bcd4','#4fc3f7','#1de9b6','#80cbc4','#64b5f6'],
+  OUTROS: ['#ff9800'],
+};
+
+let ramais = [];
+let nextId = 100;
+let editId = null;
+
+// ── AUTH ─────────────────────────────────────────────
+function login() {
+  const val = document.getElementById('pwdInput').value;
+  if (val === SENHA) {
+    localStorage.setItem(STORAGE_AUTH, '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadData();
+    render();
+  } else {
+    document.getElementById('loginErr').textContent = 'Senha incorreta.';
+    document.getElementById('pwdInput').value = '';
+  }
+}
+
+function logout() {
+  localStorage.removeItem(STORAGE_AUTH);
+  location.reload();
+}
+
+// ── DATA ─────────────────────────────────────────────
+function loadData() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    ramais = s ? JSON.parse(s) : JSON.parse(JSON.stringify(RAMAIS_INICIAIS));
+  } catch {
+    ramais = JSON.parse(JSON.stringify(RAMAIS_INICIAIS));
+  }
+  nextId = Math.max(...ramais.map(r => r.id), 99) + 1;
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ramais));
+}
+
+function resetData() {
+  if (!confirm('Restaurar todos os dados originais? Alterações serão perdidas.')) return;
+  ramais = JSON.parse(JSON.stringify(RAMAIS_INICIAIS));
+  nextId = 100;
+  saveData();
+  render();
+}
+
+// ── HELPERS ──────────────────────────────────────────
+function initials(n) { return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+function getDeptColor(dept, empresa) {
+  const palette = DEPT_PALETTES[empresa] || DEPT_PALETTES.OUTROS;
+  const depts = [...new Set(ramais.filter(r=>r.empresa===empresa).map(r=>r.dept))].sort();
+  return palette[depts.indexOf(dept) % palette.length] || palette[0];
+}
+
+// ── RENDER ───────────────────────────────────────────
+function render() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const emp = document.getElementById('filterEmp').value;
+  const dept = document.getElementById('filterDept').value;
+
+  const filtered = ramais.filter(r =>
+    (!emp || r.empresa === emp) &&
+    (!dept || r.dept === dept) &&
+    (!q || r.nome.toLowerCase().includes(q) || r.ramal.includes(q) || (r.email||'').toLowerCase().includes(q) || r.dept.toLowerCase().includes(q))
+  );
+
+  // update dept selector
+  const sel = document.getElementById('filterDept');
+  const cur = sel.value;
+  const allDepts = [...new Set(ramais.filter(r=>!emp||r.empresa===emp).map(r=>r.dept))].sort();
+  sel.innerHTML = '<option value="">Todos os depto.</option>' + allDepts.map(d=>`<option value="${d}"${d===cur?' selected':''}>${d}</option>`).join('');
+
+  // stats
+  document.getElementById('statsRow').innerHTML =
+    `<span class="stat"><strong>${filtered.length}</strong> ramais exibidos</span>` +
+    `<span class="stat"><strong>${ramais.length}</strong> total cadastrados</span>` +
+    `<span class="stat"><strong>${[...new Set(ramais.map(r=>r.dept))].length}</strong> departamentos</span>`;
+
+  if (!filtered.length) {
+    document.getElementById('content').innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>Nenhum resultado.</p>
+    </div>`;
+    return;
+  }
+
+  const byEmpDept = {};
+  filtered.forEach(r => {
+    const key = `${r.empresa}|||${r.dept}`;
+    (byEmpDept[key] = byEmpDept[key] || []).push(r);
+  });
+
+  document.getElementById('content').innerHTML = Object.entries(byEmpDept).map(([key, items]) => {
+    const [emp2, dept2] = key.split('|||');
+    const color = getDeptColor(dept2, emp2);
+    const empTag = emp2==='TECFAG'?'tag-t':emp2==='VALEM'?'tag-v':'tag-o';
+
+    const rows = items.map(r => `
+      <tr>
+        <td class="td-nome">${r.nome}</td>
+        <td class="td-ramal" style="color:${color};">${r.ramal}</td>
+        <td class="td-email">${r.email || '—'}</td>
+        <td>
+          <div class="td-actions">
+            <button class="action-btn" onclick="editRamal(${r.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar
+            </button>
+            <button class="action-btn del" onclick="deleteRamal(${r.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Excluir
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    return `<div class="dept-block">
+      <div class="dept-label">
+        <div class="dept-stripe" style="background:${color};"></div>
+        <span class="dept-text">${dept2}</span>
+        <span class="dept-empresa ${empTag}">${emp2}</span>
+        <span class="dept-n">${items.length} ramal${items.length!==1?'is':''}</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Ramal</th><th>E-mail</th><th>Ações</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODAL ────────────────────────────────────────────
+function openModal(id = null) {
+  editId = id;
+  const r = id ? ramais.find(x => x.id === id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Editar Ramal' : 'Novo Ramal';
+
+  // populate dept select
+  const sel = document.getElementById('fDept');
+  const depts = [...new Set(ramais.map(x=>x.dept))].sort();
+  sel.innerHTML = '<option value="">Selecione...</option>' + depts.map(d=>`<option value="${d}"${r?.dept===d?' selected':''}>${d}</option>`).join('');
+
+  document.getElementById('fNome').value = r?.nome || '';
+  document.getElementById('fRamal').value = r?.ramal || '';
+  document.getElementById('fEmpresa').value = r?.empresa || 'TECFAG';
+  document.getElementById('fNovoDept').value = '';
+  document.getElementById('fEmail').value = r?.email || '';
+  document.getElementById('overlay').classList.remove('hidden');
+}
+
+function closeModal() { document.getElementById('overlay').classList.add('hidden'); editId = null; }
+function closeModalOutside(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+function saveRamal() {
+  const nome = document.getElementById('fNome').value.trim();
+  const ramal = document.getElementById('fRamal').value.trim();
+  const empresa = document.getElementById('fEmpresa').value;
+  const dept = document.getElementById('fNovoDept').value.trim() || document.getElementById('fDept').value;
+  const email = document.getElementById('fEmail').value.trim();
+
+  if (!nome || !ramal || !dept) { alert('Preencha Nome, Ramal e Departamento.'); return; }
+
+  if (editId) {
+    const idx = ramais.findIndex(r => r.id === editId);
+    ramais[idx] = { id: editId, empresa, dept, nome, ramal, email };
+  } else {
+    ramais.push({ id: nextId++, empresa, dept, nome, ramal, email });
+  }
+
+  saveData();
+  closeModal();
+  render();
+}
+
+function editRamal(id) { openModal(id); }
+
+function deleteRamal(id) {
+  const r = ramais.find(x => x.id === id);
+  if (!confirm(`Excluir "${r?.nome}"?`)) return;
+  ramais = ramais.filter(x => x.id !== id);
+  saveData();
+  render();
+}
+
+// ── EXPORT ───────────────────────────────────────────
+function exportExcel() {
+  const ws = XLSX.utils.json_to_sheet(ramais.map(r => ({
+    'Empresa': r.empresa,
+    'Departamento': r.dept,
+    'Nome': r.nome,
+    'Ramal': r.ramal,
+    'E-mail': r.email
+  })));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Ramais');
+  XLSX.writeFile(wb, 'ramais_tecfag_valem.xlsx');
+}
+
+// ── INIT ─────────────────────────────────────────────
+if (localStorage.getItem(STORAGE_AUTH) === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadData();
+  render();
+}
+</script>
+</body>
+</html>
