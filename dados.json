@@ -1,0 +1,21 @@
+{
+  "ramais": [
+    {
+      "id": 1,
+      "empresa": "TECFAG",
+      "dept": "Diretoria",
+      "nome": "Gilson Donato",
+      "ramal": "5019",
+      "email": "gilson@tecfag.com.br"
+    },
+    {
+      "id": 2,
+      "empresa": "TECFAG",
+      "dept": "Diretoria",
+      "nome": "João Lanza",
+      "ramal": "5009",
+      "email": "joao@tecfag.com.br"
+    }
+  ],
+  "lastUpdate": "2026-03-31"
+}
